@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bilan bien-être</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0E6; --panel:#F7F8F3; --ink:#233028; --ink-soft:#5A6B5D;
+  --sage:#5C7561; --clay:#B5654A; --sand:#D9CBB3; --line:#D7DBCE;
+  --radius:18px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B2119; --panel:#232B22; --ink:#EAEFE6; --ink-soft:#A8B5A8;
+    --sage:#8AAE8F; --clay:#D98868; --sand:#3A4433; --line:#374035;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B2119; --panel:#232B22; --ink:#EAEFE6; --ink-soft:#A8B5A8;
+  --sage:#8AAE8F; --clay:#D98868; --sand:#3A4433; --line:#374035;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Work Sans',sans-serif;
+  display:flex; align-items:center; justify-content:center;
+  padding:32px 16px;
+}
+.card{
+  width:100%; max-width:560px; background:var(--panel);
+  border:1px solid var(--line); border-radius:var(--radius);
+  padding:40px 36px; position:relative; overflow:hidden;
+}
+.breath{
+  position:absolute; top:-70px; right:-70px; width:180px; height:180px;
+  border-radius:50%; border:1px solid var(--line); opacity:.5;
+}
+.breath::after{
+  content:''; position:absolute; inset:22px; border-radius:50%; border:1px solid var(--line);
+}
+h1{
+  font-family:'Newsreader',serif; font-weight:500; font-size:1.7rem;
+  line-height:1.25; margin:0 0 6px;
+}
+.lede{color:var(--ink-soft); font-size:.95rem; margin:0 0 28px; max-width:42ch; line-height:1.5}
+.progress-row{display:flex; gap:6px; margin-bottom:28px}
+.dot{height:4px; flex:1; background:var(--line); border-radius:2px; overflow:hidden}
+.dot i{display:block; height:100%; width:0; background:var(--sage); transition:width .35s ease}
+.dot.done i{width:100%}
+.dot.active i{width:100%}
+.qtext{font-family:'Newsreader',serif; font-size:1.35rem; font-weight:500; line-height:1.4; margin:0 0 24px; min-height:2.8em}
+.scale{display:flex; flex-direction:column; gap:10px; margin-bottom:8px}
+.opt{
+  display:flex; align-items:center; gap:14px; padding:13px 16px;
+  border:1px solid var(--line); border-radius:12px; cursor:pointer;
+  background:transparent; text-align:left; font-family:inherit; font-size:.95rem; color:var(--ink);
+  transition:border-color .15s ease, background .15s ease;
+}
+.opt:hover{border-color:var(--sage)}
+.opt .bullet{width:18px; height:18px; border-radius:50%; border:1.5px solid var(--ink-soft); flex:none; position:relative}
+.opt.selected{border-color:var(--sage); background:color-mix(in srgb, var(--sage) 12%, transparent)}
+.opt.selected .bullet{border-color:var(--sage)}
+.opt.selected .bullet::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--sage)}
+.nav{display:flex; justify-content:space-between; align-items:center; margin-top:28px}
+.btn{
+  font-family:inherit; font-size:.9rem; border:none; cursor:pointer; border-radius:10px;
+  padding:11px 20px; transition:opacity .15s ease;
+}
+.btn:disabled{opacity:.35; cursor:not-allowed}
+.btn.primary{background:var(--sage); color:#fff}
+.btn.ghost{background:transparent; color:var(--ink-soft)}
+.btn:not(:disabled):hover{opacity:.85}
+.hidden{display:none !important}
+
+/* results */
+.result-title{font-family:'Newsreader',serif; font-size:1.6rem; font-weight:500; margin:0 0 4px}
+.score-big{font-family:'Newsreader',serif; font-size:3.2rem; margin:14px 0 2px; color:var(--sage)}
+.score-label{color:var(--ink-soft); font-size:.9rem; margin-bottom:26px}
+.bar-row{margin-bottom:14px}
+.bar-head{display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:5px}
+.bar-track{height:8px; background:var(--line); border-radius:4px; overflow:hidden}
+.bar-fill{height:100%; background:var(--clay); border-radius:4px; width:0; transition:width .6s ease}
+.profile-title{font-family:'Newsreader',serif; font-size:1.1rem; font-weight:500; margin:28px 0 12px}
+.profile-row{
+  display:flex; justify-content:space-between; gap:16px; padding:10px 0;
+  border-bottom:1px solid var(--line); font-size:.87rem;
+}
+.profile-row:last-child{border-bottom:none}
+.profile-label{color:var(--ink-soft); flex:none}
+.profile-val{text-align:right; font-weight:500}
+.takeaway{
+  margin-top:26px; padding:16px 18px; background:var(--sand); border-radius:12px;
+  font-size:.9rem; line-height:1.55; color:var(--ink);
+}
+.mail-link{display:block; width:100%; text-align:center; text-decoration:none; margin-top:22px; box-sizing:border-box}
+.mail-text{
+  width:100%; min-height:180px; margin-top:12px; padding:12px; border-radius:10px;
+  border:1px solid var(--line); background:var(--bg); color:var(--ink);
+  font-family:'Work Sans',sans-serif; font-size:.82rem; line-height:1.5; resize:vertical;
+}
+.mail-hint{font-size:.78rem; color:var(--ink-soft); text-align:center; margin:8px 0 0}
+.restart{margin-top:22px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="breath" aria-hidden="true"></div>
+
+  <div id="intro">
+    <h1>Un instant pour vous</h1>
+    <p class="lede">8 questions, deux minutes. Un aperçu de votre équilibre actuel — sommeil, énergie, stress, humeur, liens, mouvement, alimentation, sens.</p>
+    <button class="btn primary" onclick="start()">Commencer</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="progress-row" id="progressRow"></div>
+    <p class="qtext" id="qtext"></p>
+    <div class="scale" id="scale"></div>
+    <div class="nav">
+      <button class="btn ghost" id="backBtn" onclick="prev()">Précédent</button>
+      <button class="btn primary" id="nextBtn" onclick="next()" disabled>Suivant</button>
+    </div>
+  </div>
+
+  <div id="results" class="hidden">
+    <p class="result-title">Votre bilan</p>
+    <div class="score-big" id="scoreBig">—</div>
+    <p class="score-label">score global sur 10</p>
+    <div id="bars"></div>
+    <p class="profile-title">Votre profil</p>
+    <div id="profile"></div>
+    <div class="takeaway" id="takeaway"></div>
+    <a class="btn primary mail-link" id="mailBtn" href="#" onclick="return prepareMail()">Envoyer mes résultats par email</a>
+    <button class="btn ghost mail-link" style="margin-top:8px" onclick="revealMail()">Ou afficher le texte à copier</button>
+    <textarea id="mailText" class="mail-text hidden" readonly onclick="this.select()"></textarea>
+    <p class="mail-hint" id="mailHint"></p>
+    <button class="btn ghost restart" onclick="restart()">Refaire le questionnaire</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {dim:'Sommeil', text:"Comment évaluez-vous la qualité de votre sommeil ces deux dernières semaines ?",
+    options:["Je dors très mal, je suis épuisée","Les nuits sont difficiles la plupart du temps","Ça dépend des jours","Je dors plutôt bien","Je dors très bien, je me réveille reposée"]},
+  {dim:'Énergie', text:"Dans quelle mesure vous sentez-vous en général plein·e d'énergie ?",
+    options:["Je suis à plat en permanence","J'ai peu d'énergie la plupart du temps","Ça varie selon les jours","J'ai globalement de l'énergie","Je déborde d'énergie"]},
+  {dim:'Stress', text:"À quel point arrivez-vous à gérer votre stress au quotidien ?",
+    options:["Je me sens débordée, je n'y arrive pas","J'ai du mal à faire face la plupart du temps","Ça dépend des jours","J'arrive plutôt bien à gérer","Je gère bien, même sous pression"]},
+  {dim:'Humeur', text:"Comment décririez-vous votre humeur générale récemment ?",
+    options:["Plutôt mal, abattue","Le moral est souvent bas","Mon humeur fluctue beaucoup","Plutôt bien la plupart du temps","Je me sens bien, sereine"]},
+  {dim:'Liens', text:"Vous sentez-vous entouré·e et soutenu·e par vos proches ?",
+    options:["Je me sens seule, peu soutenue","Je manque de soutien la plupart du temps","Ça dépend des moments","Plutôt bien entourée","Très entourée et soutenue"]},
+  {dim:'Mouvement', text:"À quelle fréquence bougez-vous ou faites-vous de l'activité physique ?",
+    options:["Quasiment jamais","Rarement, le temps ou l'envie manquent","De temps en temps, sans régularité","Assez régulièrement","Très régulièrement, ça fait partie de ma routine"]},
+  {dim:'Alimentation', text:"Diriez-vous que votre alimentation vous fait du bien en ce moment ?",
+    options:["Je mange mal, ça ne me fait pas du bien","Souvent des repas déséquilibrés","Ça dépend des jours","Plutôt équilibrée la plupart du temps","Je mange bien et ça me fait du bien"]},
+  {dim:'Sens', text:"Avez-vous le sentiment que vos journées ont du sens ?",
+    options:["Mes journées me semblent vides de sens","Rarement, je me sens un peu à côté","Par moments seulement","La plupart du temps, oui","Oui, clairement"]},
+  {dim:'Motivation', profile:true, text:"Avez-vous envie d'améliorer votre bien-être en ce moment ?",
+    options:["Pas vraiment, pas maintenant","Peut-être, sans urgence","Oui, plutôt","Oui, activement","Oui, c'est une priorité pour moi"]},
+  {dim:'Accompagnement', profile:true, text:"Qu'est-ce qui vous aiderait le plus ?",
+    options:["Un accompagnement individuel (coaching, thérapie)","Des ressources à suivre seule (articles, exercices)","Un groupe ou une communauté","Des changements concrets au quotidien","Je ne sais pas encore"]},
+  {dim:'Budget', profile:true, text:"Quel budget mensuel seriez-vous prête à consacrer à votre bien-être ?",
+    options:["Aucun budget pour l'instant","Moins de 20 €","Entre 20 et 50 €","Entre 50 et 100 €","Plus de 100 €"]},
+  {dim:'Temps disponible', profile:true, text:"Combien de temps par semaine pourriez-vous y consacrer ?",
+    options:["Moins de 30 minutes","30 minutes à 1 heure","1 à 3 heures","3 à 5 heures","Plus de 5 heures"]},
+];
+
+let current = 0;
+const answers = new Array(QUESTIONS.length).fill(null);
+
+function start(){
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  buildProgress();
+  renderQuestion();
+}
+
+function buildProgress(){
+  const row = document.getElementById('progressRow');
+  row.innerHTML = QUESTIONS.map((_,i)=>`<div class="dot" id="dot${i}"><i></i></div>`).join('');
+}
+
+function updateProgress(){
+  QUESTIONS.forEach((_,i)=>{
+    const d = document.getElementById('dot'+i);
+    d.classList.remove('active','done');
+    if(i < current) d.classList.add('done');
+    else if(i === current) d.classList.add('active');
+  });
+}
+
+function renderQuestion(){
+  updateProgress();
+  const q = QUESTIONS[current];
+  document.getElementById('qtext').textContent = q.text;
+  const scale = document.getElementById('scale');
+  scale.innerHTML = q.options.map((label,i)=>{
+    const val = i+1;
+    const selected = answers[current] === val ? 'selected' : '';
+    return `<button type="button" class="opt ${selected}" onclick="choose(${val})">
+      <span class="bullet"></span><span>${label}</span>
+    </button>`;
+  }).join('');
+  document.getElementById('backBtn').disabled = current === 0;
+  document.getElementById('nextBtn').textContent = current === QUESTIONS.length - 1 ? 'Voir mon bilan' : 'Suivant';
+  document.getElementById('nextBtn').disabled = answers[current] === null;
+}
+
+function choose(val){
+  answers[current] = val;
+  renderQuestion();
+}
+
+function next(){
+  if(answers[current] === null) return;
+  if(current === QUESTIONS.length - 1){
+    showResults();
+  } else {
+    current++;
+    renderQuestion();
+  }
+}
+
+function prev(){
+  if(current === 0) return;
+  current--;
+  renderQuestion();
+}
+
+function showResults(){
+  document.getElementById('quiz').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+
+  const wellbeingQs = QUESTIONS.map((q,i)=>({q,i})).filter(o=>!o.q.profile);
+  const profileQs = QUESTIONS.map((q,i)=>({q,i})).filter(o=>o.q.profile);
+
+  const total = wellbeingQs.reduce((a,o)=>a+answers[o.i],0);
+  const maxTotal = wellbeingQs.length * 5;
+  const overall10 = Math.round((total/maxTotal)*100)/10;
+  document.getElementById('scoreBig').textContent = overall10.toFixed(1);
+
+  const bars = document.getElementById('bars');
+  bars.innerHTML = wellbeingQs.map(({q,i})=>{
+    const pct = (answers[i]/5)*100;
+    return `<div class="bar-row">
+      <div class="bar-head"><span>${q.dim}</span><span>${answers[i]}/5</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.bar-fill').forEach(el=>{ el.style.width = el.style.width; });
+  });
+
+  const profileBlock = document.getElementById('profile');
+  profileBlock.innerHTML = profileQs.map(({q,i})=>{
+    const chosen = q.options[answers[i]-1];
+    return `<div class="profile-row"><span class="profile-label">${q.dim}</span><span class="profile-val">${chosen}</span></div>`;
+  }).join('');
+
+  const sorted = wellbeingQs.map(({q,i})=>({dim:q.dim, val:answers[i]})).sort((a,b)=>a.val-b.val);
+  const lowest = sorted[0];
+  let msg;
+  if(overall10 >= 7.5){
+    msg = `Votre équilibre général semble solide. Le point le plus fragile reste « ${lowest.dim.toLowerCase()} » — un axe à surveiller doucement, sans urgence.`;
+  } else if(overall10 >= 5){
+    msg = `Votre bien-être est globalement correct, avec des hauts et des bas. « ${lowest.dim} » ressort comme le domaine où un petit ajustement pourrait faire le plus de différence.`;
+  } else {
+    msg = `Plusieurs signaux suggèrent que la période est difficile, en particulier du côté de « ${lowest.dim.toLowerCase()} ». Ce résultat n'est pas un diagnostic : s'il fait écho à ce que vous ressentez, en parler à quelqu'un de confiance ou à un professionnel de santé peut être un bon point de départ.`;
+  }
+  document.getElementById('takeaway').textContent = msg;
+}
+
+const RECIPIENT_EMAIL = "biagui.diaba@gmail.com";
+
+function buildMailBody(){
+  const wellbeingQs = QUESTIONS.map((q,i)=>({q,i})).filter(o=>!o.q.profile);
+  const profileQs = QUESTIONS.map((q,i)=>({q,i})).filter(o=>o.q.profile);
+  const total = wellbeingQs.reduce((a,o)=>a+answers[o.i],0);
+  const overall10 = Math.round((total/(wellbeingQs.length*5))*1000)/100;
+
+  let body = `Résultats du bilan bien-être\n\nScore global : ${overall10}/10\n\n`;
+  body += "Détail par dimension :\n";
+  wellbeingQs.forEach(({q,i})=>{ body += `- ${q.dim} : ${answers[i]}/5\n`; });
+  body += "\nProfil :\n";
+  profileQs.forEach(({q,i})=>{ body += `- ${q.dim} : ${q.options[answers[i]-1]}\n`; });
+  return body;
+}
+
+function prepareMail(){
+  const subject = "Mes résultats du bilan bien-être";
+  const mailto = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(buildMailBody())}`;
+  const link = document.getElementById('mailBtn');
+  link.setAttribute('href', mailto);
+  document.getElementById('mailHint').textContent = "Si votre messagerie ne s'ouvre pas automatiquement, copiez le texte ci-dessous et envoyez-le vous-même à " + RECIPIENT_EMAIL + ".";
+  return true; // laisse le navigateur suivre le lien mailto normalement
+}
+
+function revealMail(){
+  const text = `À : ${RECIPIENT_EMAIL}\nObjet : Mes résultats du bilan bien-être\n\n${buildMailBody()}`;
+  const box = document.getElementById('mailText');
+  box.value = text;
+  box.classList.remove('hidden');
+  box.focus();
+  box.select();
+  document.getElementById('mailHint').textContent = "Le texte est sélectionné : faites Ctrl+C (ou Cmd+C sur Mac), puis collez-le dans un email adressé à " + RECIPIENT_EMAIL + ".";
+}
+
+function restart(){
+  current = 0;
+  answers.fill(null);
+  document.getElementById('mailText').classList.add('hidden');
+  document.getElementById('mailHint').textContent = '';
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('intro').classList.remove('hidden');
+}
+</script>
+</body>
+</html>
